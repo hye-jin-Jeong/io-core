@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  INTERNAL_ADMIN
+  FACILITY_MANAGER
+  USER
+}
+
+enum AttendanceStatus {
+  CHECK_IN
+  CHECK_OUT
+}
+
+enum TagType {
+  NFC
+  QR_CODE
+  RFID
+  BEACON
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String?
+  role      UserRole @default(USER)
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sessions            Session[]
+  managedFacilities   UserFacility[]
+  groupMemberships    UserGroup[]
+  tags                Tag[]
+  attendanceRecords   AttendanceRecord[]
+
+  @@map("users")
+}
+
+model Facility {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  managers          UserFacility[]
+  groups            Group[]
+  devices           Device[]
+  attendanceRecords AttendanceRecord[]
+
+  @@map("facilities")
+}
+
+model UserFacility {
+  id         String   @id @default(cuid())
+  userId     String
+  facilityId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, facilityId])
+  @@map("user_facilities")
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  facilityId  String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  facility Facility    @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  members  UserGroup[]
+
+  @@map("groups")
+}
+
+model UserGroup {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("user_groups")
+}
+
+model Device {
+  id           String       @id @default(cuid())
+  name         String
+  description  String?
+  serialNumber String?      @unique
+  facilityId   String
+  status       DeviceStatus @default(OFFLINE)
+  lastSeenAt   DateTime?
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  facility          Facility           @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  tags              Tag[]
+  attendanceRecords AttendanceRecord[]
+
+  @@map("devices")
+}
+
+model Tag {
+  id         String   @id @default(cuid())
+  identifier String
+  type       TagType
+  deviceId   String
+  userId     String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  device            Device             @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  attendanceRecords AttendanceRecord[]
+
+  // 하이브리드 접근: 기본 안전망으로 DB 레벨 제약
+  @@unique([identifier, type])
+  @@map("tags")
+}
+
+model AttendanceRecord {
+  id         String           @id @default(cuid())
+  userId     String
+  facilityId String
+  deviceId   String
+  tagId      String
+  status     AttendanceStatus
+  recordedAt DateTime         @default(now())
+  isManual   Boolean          @default(false) // 수동 등록 여부
+  note       String? // 수정 사유 등
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  device   Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  // 성능 최적화를 위한 인덱스
+  @@index([userId, recordedAt])
+  @@index([facilityId, recordedAt])
+  @@index([recordedAt])
+  @@map("attendance_records")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}

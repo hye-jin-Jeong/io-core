@@ -1,0 +1,52 @@
+// ============================================================================
+// USER RELATED MODELS
+// ============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String?
+  role      UserRole @default(USER)
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sessions            Session[]
+  managedFacilities   UserFacility[]
+  groupMemberships    UserGroup[]
+  tags                Tag[]
+  attendanceRecords   AttendanceRecord[]
+
+  @@map("users")
+}
+
+model UserFacility {
+  id         String   @id @default(cuid())
+  userId     String
+  facilityId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, facilityId])
+  @@map("user_facilities")
+}
+
+model UserGroup {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("user_groups")
+}
