@@ -1,0 +1,27 @@
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  INTERNAL_ADMIN
+  FACILITY_MANAGER
+  USER
+}
+
+enum AttendanceStatus {
+  CHECK_IN
+  CHECK_OUT
+}
+
+enum TagType {
+  NFC
+  QR_CODE
+  RFID
+  BEACON
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+}
