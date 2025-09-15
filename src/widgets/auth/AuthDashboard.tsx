@@ -1,12 +1,10 @@
-import { BoardList } from '../../domains/auth/board'
-import { UserProfile } from '../../domains/auth/user'
+import { SigninForm } from '@/domains';
 
 export const AuthDashboard = () => {
   return (
     <div>
       <h1>Auth Dashboard</h1>
-      <UserProfile />
-      <BoardList />
+      <SigninForm />
     </div>
-  )
-}
+  );
+};
