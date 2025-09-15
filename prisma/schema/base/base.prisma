@@ -15,8 +15,6 @@ enum AttendanceStatus {
 
 enum TagType {
   NFC
-  QR_CODE
-  RFID
   BEACON
 }
 

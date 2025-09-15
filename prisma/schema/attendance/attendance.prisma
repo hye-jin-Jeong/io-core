@@ -4,16 +4,16 @@
 
 model AttendanceRecord {
   id         String           @id @default(cuid())
-  userId     String
-  facilityId String
-  deviceId   String
-  tagId      String
+  userId     String @map("user_id")
+  facilityId String @map("facility_id")
+  deviceId   String @map("device_id")
+  tagId      String @map("tag_id")
   status     AttendanceStatus
-  recordedAt DateTime         @default(now())
-  isManual   Boolean          @default(false) // 수동 등록 여부
+  recordedAt DateTime         @default(now()) @map("recorded_at")
+  isManual   Boolean          @default(false) @map("is_manual") // 수동 등록 여부
   note       String? // 수정 사유 등
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
 
   // Relations
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)

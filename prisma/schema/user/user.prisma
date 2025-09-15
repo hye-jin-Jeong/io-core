@@ -9,9 +9,9 @@ model User {
   password  String?
   role      UserRole @default(USER)
   phone     String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   sessions            Session[]
@@ -21,32 +21,4 @@ model User {
   attendanceRecords   AttendanceRecord[]
 
   @@map("users")
-}
-
-model UserFacility {
-  id         String   @id @default(cuid())
-  userId     String
-  facilityId String
-  createdAt  DateTime @default(now())
-
-  // Relations
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, facilityId])
-  @@map("user_facilities")
-}
-
-model UserGroup {
-  id        String   @id @default(cuid())
-  userId    String
-  groupId   String
-  createdAt DateTime @default(now())
-
-  // Relations
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, groupId])
-  @@map("user_groups")
 }
