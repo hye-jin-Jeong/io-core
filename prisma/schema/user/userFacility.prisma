@@ -1,0 +1,17 @@
+// ============================================================================
+// USER RELATED MODELS
+// ============================================================================
+
+model UserFacility {
+  id         String   @id @default(cuid())
+  userId     String @map("user_id")
+  facilityId String @map("facility_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, facilityId])
+  @@map("user_facilities")
+}

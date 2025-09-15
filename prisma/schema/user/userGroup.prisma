@@ -1,0 +1,17 @@
+// ============================================================================
+// USER RELATED MODELS
+// ============================================================================
+
+model UserGroup {
+  id        String   @id @default(cuid())
+  userId    String @map("user_id")
+  groupId   String @map("group_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("user_groups")
+}

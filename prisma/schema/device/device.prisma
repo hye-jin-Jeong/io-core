@@ -1,0 +1,23 @@
+// ============================================================================
+// DEVICE RELATED MODELS
+// ============================================================================
+
+model Device {
+  id           String       @id @default(cuid())
+  name         String
+  description  String?
+  serialNumber String?      @unique @map("serial_number")
+  facilityId   String @map("facility_id")
+  status       DeviceStatus @default(OFFLINE)
+  lastSeenAt   DateTime? @map("last_seen_at")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  facility          Facility           @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  tags              Tag[]
+  attendanceRecords AttendanceRecord[]
+
+  @@map("devices")
+}

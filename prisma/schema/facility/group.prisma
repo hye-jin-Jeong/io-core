@@ -1,0 +1,19 @@
+// ============================================================================
+// FACILITY RELATED MODELS
+// ============================================================================
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  facilityId  String @map("facility_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  facility Facility    @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  members  UserGroup[]
+
+  @@map("groups")
+}
